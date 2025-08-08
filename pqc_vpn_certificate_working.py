@@ -245,6 +245,15 @@ class CertificateCompatibleVPN:
         interface_name = "pqc-cert0" if self.is_initiator else "pqc-cert1"
         
         try:
+            # Clean up existing interface if it exists
+            try:
+                subprocess.run([
+                    "sudo", "ip", "link", "delete", interface_name
+                ], capture_output=True, check=False)
+                print(f"[TUNNEL] Cleaned up existing interface {interface_name}")
+            except:
+                pass  # Interface didn't exist, that's fine
+            
             # Create tunnel
             subprocess.run([
                 "sudo", "ip", "tuntap", "add", "dev", interface_name, "mode", "tun"
