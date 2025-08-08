@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<lab name="PQC-IPSec-VPN-Lab" id="12345678-1234-5678-9abc-123456789012" version="1" scripttimeout="300" lock="0" author="PQC-VPN-Lab">
+  <topology>
+    <nodes>
+      <!-- Ubuntu VM1 - Left side -->
+      <node id="1" name="Ubuntu-VM1" type="qemu" template="ubuntu-20.04" image="ubuntu-20.04.4-desktop-amd64" uuid="12345678-1234-5678-9abc-123456789001" cpulimit="1" cpu="2" ram="2048" ethernet="1" qemu_version="2.12.0" qemu_arch="x86_64" qemu_nic="virtio-net-pci" qemu_options="-machine type=pc,accel=kvm -serial mon:stdio -nographic -no-user-config -nodefaults -rtc base=utc" console="telnet" delay="0" icon="Server.png" config="0" left="315" top="189">
+        <interface id="0" name="eth0" type="ethernet" network_id="1"/>
+      </node>
+      
+      <!-- Ubuntu VM2 - Right side -->
+      <node id="2" name="Ubuntu-VM2" type="qemu" template="ubuntu-20.04" image="ubuntu-20.04.4-desktop-amd64" uuid="12345678-1234-5678-9abc-123456789002" cpulimit="1" cpu="2" ram="2048" ethernet="1" qemu_version="2.12.0" qemu_arch="x86_64" qemu_nic="virtio-net-pci" qemu_options="-machine type=pc,accel=kvm -serial mon:stdio -nographic -no-user-config -nodefaults -rtc base=utc" console="telnet" delay="0" icon="Server.png" config="0" left="615" top="189">
+        <interface id="0" name="eth0" type="ethernet" network_id="1"/>
+      </node>
+      
+      <!-- Network Switch -->
+      <node id="3" name="Switch1" type="iol" template="L2-ADVENTERPRISEK9-M-15.1-20130726.bin" image="L2-ADVENTERPRISEK9-M-15.1-20130726.bin" uuid="12345678-1234-5678-9abc-123456789003" cpulimit="1" cpu="1" ram="256" nvram="256" ethernet="16" serial="0" console="telnet" delay="0" icon="Switch.png" config="0" left="465" top="189">
+        <interface id="0" name="e0/0" type="ethernet" network_id="1"/>
+        <interface id="1" name="e0/1" type="ethernet" network_id="1"/>
+      </node>
+      
+      <!-- Client networks -->
+      <node id="4" name="Client-Net1" type="qemu" template="ubuntu-20.04" image="ubuntu-20.04.4-desktop-amd64" uuid="12345678-1234-5678-9abc-123456789004" cpulimit="1" cpu="1" ram="1024" ethernet="1" qemu_version="2.12.0" qemu_arch="x86_64" qemu_nic="virtio-net-pci" qemu_options="-machine type=pc,accel=kvm -serial mon:stdio -nographic -no-user-config -nodefaults -rtc base=utc" console="telnet" delay="0" icon="Desktop.png" config="0" left="165" top="89">
+        <interface id="0" name="eth0" type="ethernet" network_id="2"/>
+      </node>
+      
+      <node id="5" name="Client-Net2" type="qemu" template="ubuntu-20.04" image="ubuntu-20.04.4-desktop-amd64" uuid="12345678-1234-5678-9abc-123456789005" cpulimit="1" cpu="1" ram="1024" ethernet="1" qemu_version="2.12.0" qemu_arch="x86_64" qemu_nic="virtio-net-pci" qemu_options="-machine type=pc,accel=kvm -serial mon:stdio -nographic -no-user-config -nodefaults -rtc base=utc" console="telnet" delay="0" icon="Desktop.png" config="0" left="765" top="89">
+        <interface id="0" name="eth0" type="ethernet" network_id="3"/>
+      </node>
+      
+      <!-- Internal switches for client networks -->
+      <node id="6" name="Switch-Net1" type="iol" template="L2-ADVENTERPRISEK9-M-15.1-20130726.bin" image="L2-ADVENTERPRISEK9-M-15.1-20130726.bin" uuid="12345678-1234-5678-9abc-123456789006" cpulimit="1" cpu="1" ram="256" nvram="256" ethernet="16" serial="0" console="telnet" delay="0" icon="Switch.png" config="0" left="265" top="89">
+        <interface id="0" name="e0/0" type="ethernet" network_id="2"/>
+        <interface id="1" name="e0/1" type="ethernet" network_id="4"/>
+      </node>
+      
+      <node id="7" name="Switch-Net2" type="iol" template="L2-ADVENTERPRISEK9-M-15.1-20130726.bin" image="L2-ADVENTERPRISEK9-M-15.1-20130726.bin" uuid="12345678-1234-5678-9abc-123456789007" cpulimit="1" cpu="1" ram="256" nvram="256" ethernet="16" serial="0" console="telnet" delay="0" icon="Switch.png" config="0" left="665" top="89">
+        <interface id="0" name="e0/0" type="ethernet" network_id="3"/>
+        <interface id="1" name="e0/1" type="ethernet" network_id="5"/>
+      </node>
+    </nodes>
+    
+    <networks>
+      <!-- WAN Network (between VPN gateways) -->
+      <network id="1" type="bridge" name="WAN-Network" left="465" top="239"/>
+      
+      <!-- LAN Networks -->
+      <network id="2" type="bridge" name="LAN1-10.1.1.0/24" left="215" top="139"/>
+      <network id="3" type="bridge" name="LAN2-10.2.2.0/24" left="715" top="139"/>
+      
+      <!-- Gateway connections -->
+      <network id="4" type="bridge" name="VM1-LAN1-Link" left="315" top="139"/>
+      <network id="5" type="bridge" name="VM2-LAN2-Link" left="615" top="139"/>
+    </networks>
+    
+    <connections>
+      <!-- WAN connections -->
+      <connection id="1" type="ethernet" source="1" source_label="eth0" destination="3" destination_label="e0/0"/>
+      <connection id="2" type="ethernet" source="2" source_label="eth0" destination="3" destination_label="e0/1"/>
+      
+      <!-- LAN connections -->
+      <connection id="3" type="ethernet" source="4" source_label="eth0" destination="6" destination_label="e0/0"/>
+      <connection id="4" type="ethernet" source="5" source_label="eth0" destination="7" destination_label="e0/0"/>
+      
+      <!-- Gateway to LAN connections -->
+      <connection id="5" type="ethernet" source="1" source_label="eth1" destination="6" destination_label="e0/1"/>
+      <connection id="6" type="ethernet" source="2" source_label="eth1" destination="7" destination_label="e0/1"/>
+    </connections>
+  </topology>
+  
+  <objects>
+    <textobjects>
+      <textobject id="1" name="title" type="text">
+        <data>PQC IPSec VPN Laboratory</data>
+        <left>400</left>
+        <top>30</top>
+      </textobject>
+      
+      <textobject id="2" name="vm1-label" type="text">
+        <data>Ubuntu VM1 (Gateway)
+192.168.1.10
+LAN: 10.1.1.0/24</data>
+        <left>250</left>
+        <top>250</top>
+      </textobject>
+      
+      <textobject id="3" name="vm2-label" type="text">
+        <data>Ubuntu VM2 (Gateway)
+192.168.1.20
+LAN: 10.2.2.0/24</data>
+        <left>550</left>
+        <top>250</top>
+      </textobject>
+      
+      <textobject id="4" name="client1-label" type="text">
+        <data>Client 1
+10.1.1.100</data>
+        <left>100</left>
+        <top>50</top>
+      </textobject>
+      
+      <textobject id="5" name="client2-label" type="text">
+        <data>Client 2
+10.2.2.100</data>
+        <left>700</left>
+        <top>50</top>
+      </textobject>
+      
+      <textobject id="6" name="description" type="text">
+        <data>Post-Quantum Cryptography (ML-DSA) IPSec VPN Test Environment
+- VM1 and VM2 act as VPN gateways using strongSwan with ML-DSA signatures
+- Client networks test end-to-end connectivity through encrypted tunnel
+- WAN network simulates internet connection between sites</data>
+        <left>50</left>
+        <top>350</top>
+      </textobject>
+    </textobjects>
+  </objects>
+</lab>
